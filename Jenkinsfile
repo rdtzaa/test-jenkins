@@ -21,6 +21,7 @@ pipeline {
             }
             steps {
                 sh '''
+                git config --global --add safe.directory ${WORKSPACE}
                     go version
                     go mod download
                     go build -v ./...
