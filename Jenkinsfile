@@ -5,7 +5,6 @@ pipeline {
         SONARQUBE_ENV = 'sonarserver'
         PROJECT_KEY   = 'go-project'
         PROJECT_NAME  = 'go-project'
-        SCANNER_HOME  = tool 'sonarqube8.0'
     }
 
     stages {
@@ -36,14 +35,17 @@ pipeline {
             agent { label 'built-in' }
             steps {
                 unstash 'go-artifacts'
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
-                          -Dsonar.projectKey=${PROJECT_KEY} \
-                          -Dsonar.projectName=${PROJECT_NAME} \
-                          -Dsonar.sources=. \
-                          -Dsonar.go.coverage.reportPaths=coverage.out
-                    """
+                script {
+                    def SCANNER_HOME = tool 'sonarqube8.0'
+                    withSonarQubeEnv("${SONARQUBE_ENV}") {
+                        sh """
+                            ${SCANNER_HOME}/bin/sonar-scanner \
+                              -Dsonar.projectKey=${PROJECT_KEY} \
+                              -Dsonar.projectName=${PROJECT_NAME} \
+                              -Dsonar.sources=. \
+                              -Dsonar.go.coverage.reportPaths=coverage.out
+                        """
+                    }
                 }
             }
         }
