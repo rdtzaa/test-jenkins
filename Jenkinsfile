@@ -24,17 +24,20 @@ pipeline {
                     git config --global --add safe.directory ${WORKSPACE}
                     go version
                     go mod download
-                    go build -v ./...
-                    go test ./... -v -coverprofile=coverage.out
+                    go build ./...
+                    go test ./... -coverprofile=coverage.out
                 '''
-                stash includes: 'coverage.out, **/*.go, go.mod, go.sum', name: 'go-artifacts'
+                stash name: 'go-artifacts',
+                      includes: 'coverage.out, **/*.go, go.mod, go.sum'
             }
         }
 
         stage('SonarQube Analysis') {
             agent { label 'built-in' }
             steps {
+                deleteDir()          // <<< PENTING
                 unstash 'go-artifacts'
+
                 script {
                     def SCANNER_HOME = tool 'sonarqube8.0'
                     withSonarQubeEnv("${SONARQUBE_ENV}") {
@@ -61,11 +64,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Pipeline sukses'
-        }
-        failure {
-            echo 'Pipeline gagal'
-        }
+        success { echo 'Pipeline sukses' }
+        failure { echo 'Pipeline gagal' }
     }
 }
